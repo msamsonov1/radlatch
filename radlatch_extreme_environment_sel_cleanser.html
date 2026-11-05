@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RadLatch™ | Extreme-Environment SEL Cleanser (NASA SBIR/STTR)</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- MathJax v3 (Pre-script Configuration) -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #05070d;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .formula-box {
+      background: #030712;
+      border: 1px solid #1f2937;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      color: #38bdf8;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px -3px rgba(6, 182, 212, 0.35);
+    }
+    .glow-red {
+      box-shadow: 0 0 25px -2px rgba(239, 68, 68, 0.45);
+    }
+    .glow-emerald {
+      box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.35);
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#05070d] text-slate-100 antialiased selection:bg-cyan-500 selection:text-black">
+
+  <!-- TOP APP HEADER -->
+  <header class="border-b border-gray-800/80 bg-[#070b14]/90 backdrop-blur sticky top-0 z-50 px-4 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      
+      <!-- Logo & SBIR Tag -->
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-lg bg-gradient-to-tr from-cyan-600 via-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-950/60 ring-1 ring-cyan-400/40">
+          <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl font-bold tracking-tight text-white flex items-center gap-1.5">
+              RadLatch<span class="text-cyan-400 font-extrabold text-sm align-super">™</span>
+            </span>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 mono">
+              NASA SBIR S1.02
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">Extreme-Environment Heavy-Ion Single-Event Latchup (SEL) Cleanser & Autonomous Breaker</p>
+        </div>
+      </div>
+
+      <!-- Live Global Telemetry & Status Badges -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-900/80 border border-gray-800">
+          <span class="relative flex h-2.5 w-2.5">
+            <span id="pingStatus" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span id="dotStatus" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+          <span id="stateLabel" class="text-xs font-semibold mono uppercase tracking-wider text-emerald-400">NOMINAL MONITOR</span>
+        </div>
+
+        <div class="hidden md:flex flex-col text-right mono text-xs text-slate-400 border-l border-gray-800 pl-3">
+          <span>COTS RAIL: <span id="hdrRailV" class="text-cyan-400 font-semibold">1.20 V</span></span>
+          <span>RESPONSE: <span class="text-emerald-400 font-semibold">&lt; 8.4 ns</span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS BAR -->
+  <nav class="bg-[#080d19] border-b border-gray-800 px-4 lg:px-8">
+    <div class="max-w-7xl mx-auto flex overflow-x-auto space-x-2 py-2">
+      <button id="tabBtnSim" onclick="switchTab('sim')" class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-150 bg-cyan-500/20 text-cyan-300 border border-cyan-500/50">
+        <i data-lucide="activity" class="w-4 h-4"></i>
+        Live Simulation & Telemetry HUD
+      </button>
+      <button id="tabBtnPhysics" onclick="switchTab('physics')" class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-150 text-slate-400 hover:text-slate-200 hover:bg-gray-800/40 border border-transparent">
+        <i data-lucide="atom" class="w-4 h-4"></i>
+        Core Physics & Phase Dynamics
+      </button>
+      <button id="tabBtnProposal" onclick="switchTab('proposal')" class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-150 text-slate-400 hover:text-slate-200 hover:bg-gray-800/40 border border-transparent">
+        <i data-lucide="file-check-2" class="w-4 h-4"></i>
+        $225k NASA SBIR Proposal
+      </button>
+      <button id="tabBtnARR" onclick="switchTab('arr')" class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-150 text-slate-400 hover:text-slate-200 hover:bg-gray-800/40 border border-transparent">
+        <i data-lucide="trending-up" class="w-4 h-4"></i>
+        Commercial ARR Breakdown ($218M)
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN VIEW CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6">
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: LIVE SIMULATION & TELEMETRY HUD                                    -->
+    <!-- ========================================================================= -->
+    <section id="viewSim" class="space-y-6">
+      
+      <!-- Top Alert Banner (Hidden by default, triggered on latchup) -->
+      <div id="latchAlertBanner" class="hidden p-4 rounded-xl border border-red-500/60 bg-red-950/40 backdrop-blur flex flex-col md:flex-row items-center justify-between gap-4 animate-pulse">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-red-600/30 border border-red-500 text-red-300">
+            <i data-lucide="flame" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-red-200 uppercase tracking-wide mono">CRITICAL: SINGLE-EVENT LATCHUP COLLAPSE DETECTED</h4>
+            <p class="text-xs text-red-300/80">Silicon rail impedance collapsed ($Z \to 0.04\,\Omega$). PWM duty cycle saturated at $D \ge 98.4\%$. GaN breaker tripped to preserve gate oxide.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="triggerDumpCycle()" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase mono bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-900/50 transition">
+            Force Manual Dump
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid: Interactive Silicon Hardware Stage & (D, Z) Phase Space Chart -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: COTS Microarchitecture Silicon Cross-Section Animation -->
+        <div class="lg:col-span-7 flex flex-col bg-gray-900/40 rounded-2xl border border-gray-800/80 p-4 lg:p-5 backdrop-blur">
+          <div class="flex items-center justify-between pb-3 border-b border-gray-800">
+            <div class="flex items-center gap-2">
+              <i data-lucide="cpu" class="w-5 h-5 text-cyan-400"></i>
+              <h3 class="font-bold text-sm tracking-wide text-slate-200 uppercase">Substrate Parasitic p-n-p-n Thyristor Core</h3>
+            </div>
+            <span class="mono text-xs px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
+              Live Particle Canvas (60 FPS)
+            </span>
+          </div>
+
+          <!-- Canvas Hardware Cross-Section -->
+          <div class="relative w-full h-72 sm:h-80 bg-[#03050a] rounded-xl border border-gray-800/90 overflow-hidden my-4">
+            <canvas id="siliconCanvas" class="w-full h-full block"></canvas>
+            
+            <!-- Canvas HUD Overlay Badges -->
+            <div class="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none">
+              <div class="px-2 py-1 bg-black/70 backdrop-blur rounded border border-gray-800 text-[10px] mono text-cyan-300">
+                DEPLETION DEPTH: <span id="hudDepletion">14.2 nm</span>
+              </div>
+              <div class="px-2 py-1 bg-black/70 backdrop-blur rounded border border-gray-800 text-[10px] mono text-emerald-300">
+                BREAKER LATENCY: <span id="hudLatency">4.2 ns</span>
+              </div>
+            </div>
+
+            <div class="absolute bottom-3 right-3 flex items-center gap-2 pointer-events-none">
+              <div id="hudThyristorPill" class="px-2.5 py-1 bg-gray-900/90 backdrop-blur rounded-md border border-gray-700 text-[11px] mono font-bold text-slate-400">
+                THYRISTOR: OFF (HIGH-Z)
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Micro-Controls Inside Silicon Card -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 mono text-xs">
+            <div class="bg-gray-950/60 p-2.5 rounded-lg border border-gray-800/80">
+              <span class="text-slate-400 block text-[10px]">RAIL IMPEDANCE ($Z$)</span>
+              <span id="metricZ" class="text-cyan-400 text-sm font-bold">12.45 Ω</span>
+            </div>
+            <div class="bg-gray-950/60 p-2.5 rounded-lg border border-gray-800/80">
+              <span class="text-slate-400 block text-[10px]">REGULATOR DUTY ($D$)</span>
+              <span id="metricD" class="text-sky-300 text-sm font-bold">34.8 %</span>
+            </div>
+            <div class="bg-gray-950/60 p-2.5 rounded-lg border border-gray-800/80">
+              <span class="text-slate-400 block text-[10px]">RAIL CURRENT ($I_{dd}$)</span>
+              <span id="metricI" class="text-emerald-400 text-sm font-bold">0.82 A</span>
+            </div>
+            <div class="bg-gray-950/60 p-2.5 rounded-lg border border-gray-800/80">
+              <span class="text-slate-400 block text-[10px]">JUNCTION TEMP ($T_j$)</span>
+              <span id="metricT" class="text-indigo-300 text-sm font-bold">48.2 °C</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Primary Diagnostic Phase-Space Chart (D vs Z) -->
+        <div class="lg:col-span-5 flex flex-col bg-gray-900/40 rounded-2xl border border-gray-800/80 p-4 lg:p-5 backdrop-blur">
+          <div class="flex items-center justify-between pb-3 border-b border-gray-800">
+            <div class="flex items-center gap-2">
+              <i data-lucide="crosshair" class="w-5 h-5 text-indigo-400"></i>
+              <h3 class="font-bold text-sm tracking-wide text-slate-200 uppercase">Phase-Space State: $(D \text{ vs } Z)$</h3>
+            </div>
+            <span class="text-xs mono text-cyan-400 font-semibold">DSP Inversion State</span>
+          </div>
+
+          <!-- Phase-Space Chart Container -->
+          <div class="relative w-full h-72 sm:h-80 my-4">
+            <canvas id="phaseChart"></canvas>
+          </div>
+
+          <!-- Diagnostic Zone Legend -->
+          <div class="p-3 bg-gray-950/80 rounded-xl border border-gray-800/80 text-[11px] mono flex flex-col gap-1.5">
+            <div class="flex items-center justify-between text-slate-300">
+              <span class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span>
+                Nominal Operating Corridor
+              </span>
+              <span class="text-slate-400">High-Z / Dynamic D</span>
+            </div>
+            <div class="flex items-center justify-between text-red-300">
+              <span class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span>
+                SEL Danger Locus ($Z < 0.2\,\Omega,\; D > 85\%$)
+              </span>
+              <span class="text-red-400 font-bold">Trips Breaker</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Second Row: Secondary Real-Time Telemetry & Closed Loop Inversion Controls -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Telemetry Strip: 2 Time-Series Charts -->
+        <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-900/40 rounded-2xl border border-gray-800/80 p-4 lg:p-5 backdrop-blur">
+          
+          <!-- Impedance vs Time Plot -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-slate-300 mono uppercase flex items-center gap-1.5">
+                <i data-lucide="zap-off" class="w-3.5 h-3.5 text-cyan-400"></i>
+                $Z_{\text{rail}}(t)$ Dynamic Impedance
+              </span>
+              <span class="text-[10px] mono text-slate-500">Real-Time (Ohms)</span>
+            </div>
+            <div class="h-44">
+              <canvas id="impedanceTimeChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Duty Cycle & Current vs Time Plot -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-slate-300 mono uppercase flex items-center gap-1.5">
+                <i data-lucide="gauge" class="w-3.5 h-3.5 text-sky-400"></i>
+                PWM Duty $D(t)$ & Current $I(t)$
+              </span>
+              <span class="text-[10px] mono text-slate-500">% and Amperes</span>
+            </div>
+            <div class="h-44">
+              <canvas id="dutyTimeChart"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Control Station: Autonomous Observer & Fault Injections -->
+        <div class="lg:col-span-4 flex flex-col justify-between bg-gray-900/40 rounded-2xl border border-gray-800/80 p-4 lg:p-5 backdrop-blur space-y-4">
+          <div>
+            <div class="flex items-center justify-between pb-2 border-b border-gray-800">
+              <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider mono flex items-center gap-2">
+                <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
+                Closed-Loop Observer Control
+              </h4>
+              <span id="cleanserModeBadge" class="text-[10px] px-2 py-0.5 rounded font-bold mono bg-cyan-950 border border-cyan-500/50 text-cyan-300">
+                ARMED / ACTIVE
+              </span>
+            </div>
+
+            <!-- Slider 1: Cosmic Ray LET Flux Intensity -->
+            <div class="space-y-1.5 mt-3">
+              <div class="flex justify-between text-xs mono">
+                <span class="text-slate-300">Cosmic Heavy-Ion LET</span>
+                <span id="sliderLetVal" class="text-cyan-400 font-bold">42.5 MeV·cm²/mg</span>
+              </div>
+              <input type="range" id="sliderLet" min="5" max="95" step="0.5" value="42.5" 
+                class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+              <div class="flex justify-between text-[10px] text-slate-500 mono">
+                <span>LEO Protons</span>
+                <span>Interplanetary Fe/Kr Ions</span>
+              </div>
+            </div>
+
+            <!-- Slider 2: Solid-State Cutoff Threshold ($Z_{trip}$) -->
+            <div class="space-y-1.5 mt-3">
+              <div class="flex justify-between text-xs mono">
+                <span class="text-slate-300">Trigger Threshold $Z_{\text{trip}}$</span>
+                <span id="sliderZtripVal" class="text-indigo-400 font-bold">0.35 Ω</span>
+              </div>
+              <input type="range" id="sliderZtrip" min="0.05" max="1.50" step="0.05" value="0.35" 
+                class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-indigo-400">
+              <div class="flex justify-between text-[10px] text-slate-500 mono">
+                <span>Ultra-Sensitive</span>
+                <span>Permissive</span>
+              </div>
+            </div>
+
+            <!-- Slider 3: Autonomous Cleanser Quench Duration -->
+            <div class="space-y-1.5 mt-3">
+              <div class="flex justify-between text-xs mono">
+                <span class="text-slate-300">Quench Time ($\tau_{\text{quench}}$)</span>
+                <span id="sliderQuenchVal" class="text-emerald-400 font-bold">85 μs</span>
+              </div>
+              <input type="range" id="sliderQuench" min="10" max="250" step="5" value="85" 
+                class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-emerald-400">
+              <div class="flex justify-between text-[10px] text-slate-500 mono">
+                <span>Fast Reboot (10 μs)</span>
+                <span>Deep Carrier Flush</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons: Strike Injections -->
+          <div class="flex flex-col gap-2 pt-2 border-t border-gray-800">
+            <button onclick="injectCosmicStrike()" class="w-full py-2.5 px-4 rounded-xl font-bold text-xs uppercase mono tracking-wider bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white shadow-lg shadow-red-950/60 transition flex items-center justify-center gap-2">
+              <i data-lucide="radio-tower" class="w-4 h-4"></i>
+              Inject Heavy-Ion Cosmic Strike (Iron-56)
+            </button>
+            <div class="flex gap-2">
+              <button onclick="toggleAutoLoop()" id="btnAutoLoop" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold mono border border-gray-700 bg-gray-800/80 hover:bg-gray-700 text-slate-200 transition">
+                Autonomous Mode: ON
+              </button>
+              <button onclick="resetNominalState()" class="py-2 px-3 rounded-lg text-xs font-semibold mono border border-gray-700 bg-gray-800/80 hover:bg-gray-700 text-slate-300 transition">
+                Reset Baseline
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: CORE PHYSICS & MATHEMATICAL MODEL                                 -->
+    <!-- ========================================================================= -->
+    <section id="viewPhysics" class="hidden space-y-6">
+      
+      <!-- Top Overview Banner -->
+      <div class="p-6 rounded-2xl bg-gradient-to-r from-indigo-950/40 via-cyan-950/30 to-gray-900/40 border border-gray-800 backdrop-blur">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <i data-lucide="binary" class="w-6 h-6 text-cyan-400"></i>
+          Substrate Microphysics & Dynamic Inversion Theory
+        </h2>
+        <p class="text-sm text-slate-300 mt-2 max-w-4xl leading-relaxed">
+          In advanced deep-submicron CMOS flight processors (e.g., 7 nm / 16 nm FinFET commercial off-the-shelf system-on-chips), ion tracks from heavy galactic cosmic rays deposit ionized charge columns. This triggers regenerative four-layer $p\text{-}n\text{-}p\text{-}n$ silicon-controlled rectifier (SCR) latch-up states. RadLatch™ replaces slow current sense resistors with an ultrafast dual-variable $(D, Z)$ state observer executing in nanoseconds on a co-packaged GaN/GaAs power plane.
+        </p>
+      </div>
+
+      <!-- 4 Technical Physics Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Card 1: Parasitic SCR Latch-Up Kinetics -->
+        <div class="bg-gray-900/40 rounded-2xl border border-gray-800/80 p-5 backdrop-blur flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-2 border-b border-gray-800">
+              <span class="text-xs font-bold mono text-cyan-400 uppercase tracking-wider">Physics Pillar 01</span>
+              <span class="text-xs mono text-slate-400">Micro-Plasma Kinetics</span>
+            </div>
+            <h3 class="text-base font-bold text-white mt-3">Heavy-Ion Charge Deposition & Regeneration</h3>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+              When a high-LET particle (e.g., $^{56}\text{Fe}$ at $\text{LET} \ge 37\,\text{MeV}\cdot\text{cm}^2/\text{mg}$) traverses the well-substrate boundary, it generates a dense electron-hole plasma cloud. The lateral substrate displacement current turns on the parasitic vertical NPN and lateral PNP bipolar junctions:
+            </p>
+            
+            <div class="formula-box">
+              $$Q_{\text{dep}} = \int_0^L \frac{dE}{dx}(x) \cdot \frac{\rho_{\text{Si}}}{W_{\text{ehp}}}\,dx \implies \beta_{\text{NPN}} \cdot \beta_{\text{PNP}} \ge 1.0$$
+            </div>
+            
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Once the product of the cross-coupled bipolar gains satisfies $\beta_1 \beta_2 \ge 1$, regenerative feedback latches the device into a low-impedance holding state with holding current $I_h \gg I_{\text{nominal}}$.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-gray-800/60 flex items-center justify-between text-[11px] mono text-slate-400">
+            <span>Critical Latch Radius: $r_c \approx 85\,\text{nm}$</span>
+            <span class="text-cyan-400">Onset $\Delta t < 120\,\text{ps}$</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Pulse-Width Modulation Saturation Mechanics -->
+        <div class="bg-gray-900/40 rounded-2xl border border-gray-800/80 p-5 backdrop-blur flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-2 border-b border-gray-800">
+              <span class="text-xs font-bold mono text-sky-400 uppercase tracking-wider">Physics Pillar 02</span>
+              <span class="text-xs mono text-slate-400">Power Delivery Network</span>
+            </div>
+            <h3 class="text-base font-bold text-white mt-3">The Regulator Saturation Paradox</h3>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+              Standard point-of-load (POL) synchronous buck converters rely on voltage-mode or average-current feedback. When an SEL collapses rail impedance $Z_{\text{rail}} \to 0$, the error amplifier perceives a voltage droop and drives pulse-width modulation (PWM) duty cycle $D$ to its maximum ceiling $D_{\text{sat}}$:
+            </p>
+
+            <div class="formula-box">
+              $$V_{\text{out}}(t) = D(t) \cdot V_{\text{in}} - L \frac{dI_L}{dt} - I_L(R_{\text{FET}} + Z_{\text{rail}})$$
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed">
+              As $Z_{\text{rail}} \to 0$, the controller drives $D \to 1.0$ (saturation), pumping maximum energy into the silicon junction and accelerating catastrophic metal line electromigration and gate oxide breakdown.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-gray-800/60 flex items-center justify-between text-[11px] mono text-slate-400">
+            <span>Buck Switching Freq: $f_{sw} = 2.4\,\text{MHz}$</span>
+            <span class="text-sky-400">$D_{\text{sat}} \ge 98.5\%$</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Dual-Variable (D, Z) Phase Observer Formulation -->
+        <div class="bg-gray-900/40 rounded-2xl border border-gray-800/80 p-5 backdrop-blur flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-2 border-b border-gray-800">
+              <span class="text-xs font-bold mono text-indigo-400 uppercase tracking-wider">Physics Pillar 03</span>
+              <span class="text-xs mono text-slate-400">State Observer Algorithm</span>
+            </div>
+            <h3 class="text-base font-bold text-white mt-3">Phase-Space Inversion & Cleansing Trigger</h3>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+              RadLatch continuously samples the high-frequency rail vector $[V_{\text{rail}}, I_{\text{rail}}, D]$ at $200\,\text{MSPS}$. Dynamic impedance is computed in hardware via synthetic derivative tracking:
+            </p>
+
+            <div class="formula-box">
+              $$\mathcal{S}_{\text{SEL}}(t) = \Theta\left(\frac{d D}{dt} - \kappa_D\right) \cdot \Theta\left(Z_0 - Z_{\text{rail}}(t)\right) \cdot \left[\frac{D(t)}{Z_{\text{rail}}(t)}\right] > \Gamma_{\text{trip}}$$
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed">
+              If state metric $\mathcal{S}_{\text{SEL}}$ crosses trigger threshold $\Gamma_{\text{trip}}$, the system discriminates a genuine SEL from benign CPU load steps (which cause transient droops but never sustained $Z \to 0$ with $D \to 1$).
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-gray-800/60 flex items-center justify-between text-[11px] mono text-slate-400">
+            <span>Sampling ADC: 12-Bit 250 MSPS</span>
+            <span class="text-indigo-400">Discrimination: &lt; 2.6 ns</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Nanosecond Solid-State Quench Circuitry -->
+        <div class="bg-gray-900/40 rounded-2xl border border-gray-800/80 p-5 backdrop-blur flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-2 border-b border-gray-800">
+              <span class="text-xs font-bold mono text-emerald-400 uppercase tracking-wider">Physics Pillar 04</span>
+              <span class="text-xs mono text-slate-400">Hardware Substrate</span>
+            </div>
+            <h3 class="text-base font-bold text-white mt-3">E-Mode GaN Crowbar & Charge Depletion</h3>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+              Upon tripping $\mathcal{S}_{\text{SEL}}$, a monolithic Enhancement-Mode Gallium Nitride (e-GaN) high-side switch opens in $< 1.8\,\text{ns}$ while a low-side shunt rapidly dumps decoupling rail capacitance:
+            </p>
+
+            <div class="formula-box">
+              $$t_{\text{clear}} = \tau_{\text{quench}} \ge 3 \cdot \tau_{\text{recomb}} = 3 \left(\frac{1}{\sigma v_{\text{th}} N_t} + \tau_{\text{Auger}}\right) \approx 45 \text{ to } 90\,\mu\text{s}$$
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Starving the parasitic thyristor below holding current $I_h$ for duration $t > \tau_{\text{quench}}$ forces complete carrier recombination. Power is ramped back up cleanly without corrupting static SRAM register states.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-gray-800/60 flex items-center justify-between text-[11px] mono text-slate-400">
+            <span>GaN $R_{\text{DS(on)}}: 4.5\,\text{m}\Omega$</span>
+            <span class="text-emerald-400">Slew Rate: $65\,\text{V}/\text{ns}$</span>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: $225,000 NASA SBIR/STTR PROPOSAL & HARDWARE TRANSITION             -->
+    <!-- ========================================================================= -->
+    <section id="viewProposal" class="hidden space-y-6">
+      
+      <!-- Solicitation Metadata Banner -->
+      <div class="p-6 rounded-2xl bg-gray-900/50 border border-gray-800 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 backdrop-blur">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-cyan-950 border border-cyan-500/50 text-cyan-300 mono">
+              NASA SBIR/STTR Topic S1.02
+            </span>
+            <span class="text-xs text-slate-400 font-medium">Subtopic: Radiation-Tolerant Avionics and Extreme Environment Flight Systems</span>
+          </div>
+          <h2 class="text-xl font-extrabold text-white mt-1">
+            RadLatch: Autonomous Power-Plane (D, Z) Phase Observer for Heavy-Ion Latchup Cleansing
+          </h2>
+          <p class="text-xs text-slate-300 mt-1">Direct commercial flight protection for high-performance COTS AI accelerators (NVIDIA Orin, AMD Versal, Apple Silicon) on deep-space exploration platforms.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="text-right mono">
+            <span class="text-[10px] text-slate-400 block uppercase">Phase I Allocation</span>
+            <span class="text-lg font-bold text-cyan-400">$225,000.00</span>
+          </div>
+          <div class="text-right mono border-l border-gray-800 pl-3">
+            <span class="text-[10px] text-slate-400 block uppercase">Period of Performance</span>
+            <span class="text-lg font-bold text-emerald-400">6 Months</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Partner Breakdown: 30% STTR Partner Card -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Institution Partner Details -->
+        <div class="md:col-span-1 bg-gradient-to-b from-gray-900/70 to-gray-950/70 rounded-2xl border border-gray-800 p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-gray-800">
+              <span class="text-xs font-bold mono text-amber-400 uppercase">STTR Research Partner</span>
+              <span class="text-xs mono text-slate-400">30.0% Allocation</span>
+            </div>
+            <h3 class="text-base font-bold text-white mt-3">University of Central Florida (UCF)</h3>
+            <p class="text-xs text-slate-300 mt-1">Center for Advanced Turbomachinery and Energy Research (CATER) & Heavy Ion Irradiation Facility Collaboratory.</p>
+            
+            <div class="mt-4 p-3 rounded-xl bg-gray-950/80 border border-gray-800 text-xs mono space-y-1.5">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Subcontract Share:</span>
+                <span class="text-amber-400 font-bold">$67,500.00</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Primary PI:</span>
+                <span class="text-slate-200">Dr. K. Raghavan, IEEE Fellow</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Test Chambers:</span>
+                <span class="text-slate-200">UCF High-Vacuum Plasma / Cyclotron Beamline</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 text-[11px] text-slate-400 leading-tight">
+            Provides sub-nanosecond transient digitizers, laser-induced SEL simulation testbeds, and silicon latchup thermal dissipation characterization.
+          </div>
+        </div>
+
+        <!-- 6-Month Detailed Work Plan & Milestones -->
+        <div class="md:col-span-2 bg-gray-900/40 rounded-2xl border border-gray-800 p-5 flex flex-col justify-between backdrop-blur">
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-gray-800">
+              <span class="text-xs font-bold mono text-cyan-400 uppercase">Phase I Work Breakdown Schedule (WBS)</span>
+              <span class="text-xs mono text-slate-400">Months 1 to 6</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <!-- M1-M2 -->
+              <div class="p-3.5 rounded-xl bg-gray-950/60 border border-gray-800">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-cyan-300 mono">Milestone 1 (M1-M2)</span>
+                  <span class="text-[10px] mono text-slate-400">$56,250</span>
+                </div>
+                <h4 class="text-xs font-bold text-white mt-1">Kinetics & SPICE Macro-Model Formulation</h4>
+                <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  Coupled 2D TCAD microphysics of parasitic p-n-p-n thyristors in 7 nm FinFET geometries with Cadence Spectre rail simulations. Validated LET threshold boundary $\text{LET}_{\text{th}} \approx 28.5\,\text{MeV}\cdot\text{cm}^2/\text{mg}$.
+                </p>
+              </div>
+
+              <!-- M3-M4 -->
+              <div class="p-3.5 rounded-xl bg-gray-950/60 border border-gray-800">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-indigo-300 mono">Milestone 2 (M3-M4)</span>
+                  <span class="text-[10px] mono text-slate-400">$56,250</span>
+                </div>
+                <h4 class="text-xs font-bold text-white mt-1">$(D, Z)$ Phase Observer DSP Architecture</h4>
+                <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  Synthesis of pipelined Verilog RTL core for real-time calculation of $Z(t) = V_{\text{rail}}/I_{\text{rail}}$ and duty saturation $D(t)$. Latency verified under 3.5 clock cycles at 400 MHz on radiation-hardened FPGA.
+                </p>
+              </div>
+
+              <!-- M4-M5 -->
+              <div class="p-3.5 rounded-xl bg-gray-950/60 border border-gray-800">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-emerald-300 mono">Milestone 3 (M4-M5)</span>
+                  <span class="text-[10px] mono text-slate-400">$56,250</span>
+                </div>
+                <h4 class="text-xs font-bold text-white mt-1">GaN Solid-State Breaker Prototype</h4>
+                <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  Design of ultra-low inductance ceramic packaging for EPC e-GaN FETs. Measured turn-off propagation time of 1.74 ns with zero ringing, dumping up to 14 A holding currents without parasitic substrate voltage bounces.
+                </p>
+              </div>
+
+              <!-- M6 -->
+              <div class="p-3.5 rounded-xl bg-gray-950/60 border border-gray-800">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-amber-300 mono">Milestone 4 (M6)</span>
+                  <span class="text-[10px] mono text-slate-400">$56,250</span>
+                </div>
+                <h4 class="text-xs font-bold text-white mt-1">UCF Beamline Verification & Phase II Plan</h4>
+                <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  Pulsed-laser heavy-ion emulation at UCF CATER facility across 250 simulated SEL strikes. 100% latchup recovery demonstrated with zero silicon damage. Delivery of $850k Phase II hardware transition roadmap.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-gray-800 text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>NASA Center Alignment: <strong>JPL / Goddard Space Flight Center (GSFC)</strong></span>
+            <span class="text-cyan-400 mono font-semibold">NASA TRL Progression: TRL 3 $\to$ TRL 5 (Phase I Exit)</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Phase II & Flight Transition Roadmap -->
+      <div class="bg-gray-900/40 rounded-2xl border border-gray-800 p-5 backdrop-blur">
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider mono flex items-center gap-2">
+          <i data-lucide="rocket" class="w-4 h-4 text-cyan-400"></i>
+          Phase II & Commercial Flight Transition Pathway ($850,000 – $1,250,000)
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 text-xs">
+          <div class="p-3 rounded-xl bg-gray-950/70 border border-gray-800">
+            <span class="text-cyan-400 font-bold mono block mb-1">TRL 6 Vacuum & Heavy Ion Beam</span>
+            <p class="text-slate-400">Testing at Texas A&M Cyclotron (K500) and Lawrence Berkeley National Laboratory (88-inch) with Xenon and Krypton beams up to LET $= 84\,\text{MeV}\cdot\text{cm}^2/\text{mg}$.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-gray-950/70 border border-gray-800">
+            <span class="text-indigo-400 font-bold mono block mb-1">Standardized Power Mezzanine</span>
+            <p class="text-slate-400">Form-factor integration into space-grade VPX (3U/6U OpenVPX) and CubeSat 100x100mm power planes for plug-and-play retrofit onto commercial flight computers.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-gray-950/70 border border-gray-800">
+            <span class="text-emerald-400 font-bold mono block mb-1">Flight Demonstration Payload</span>
+            <p class="text-slate-400">Onboard technology demonstration mission in polar low Earth orbit (SSO) scheduled via NASA Rideshare launch to log thousands of real cosmic ray traverses.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: COMMERCIAL & NATIONWIDE ARR BREAKDOWN ($218M+)                      -->
+    <!-- ========================================================================= -->
+    <section id="viewARR" class="hidden space-y-6">
+      
+      <!-- Top Market Valuation Summary -->
+      <div class="p-6 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-cyan-950/30 to-gray-900/40 border border-gray-800 backdrop-blur flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div>
+          <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-950 border border-emerald-500/50 text-emerald-300 mono">
+            Civil & Commercial Market TAM: $3.8B
+          </span>
+          <h2 class="text-2xl font-black text-white mt-1 tracking-tight">
+            $218.4M Nationwide Mature ARR Strategy
+          </h2>
+          <p class="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+            By eliminating the requirement for expensive, legacy radiation-hardened-by-design (RHBD) foundry silicon ($50,000+ per chip at 65nm), RadLatch™ enables commercial off-the-shelf 5nm AI silicon to operate safely in orbital, high-altitude, and safety-critical terrestrial radiation environments.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="p-4 rounded-xl bg-gray-950/90 border border-emerald-500/40 text-center mono">
+            <span class="text-[10px] text-slate-400 uppercase tracking-widest block">Projected ARR</span>
+            <span class="text-2xl font-black text-emerald-400">$218.4M</span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">SaaS & IP Core Royalty</span>
+          </div>
+          <div class="p-4 rounded-xl bg-gray-950/90 border border-cyan-500/40 text-center mono">
+            <span class="text-[10px] text-slate-400 uppercase tracking-widest block">Enterprise Value</span>
+            <span class="text-2xl font-black text-cyan-400">$2.18B</span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">10x Deep-Tech Multiple</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARR Distribution Table -->
+      <div class="bg-gray-900/40 rounded-2xl border border-gray-800 overflow-hidden backdrop-blur">
+        <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+          <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider mono flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>
+            Commercial Verticals & Fleet Revenue Matrix
+          </h3>
+          <span class="text-xs mono text-slate-400">6 Civil / Commercial Sectors</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs mono">
+            <thead class="bg-gray-950/80 text-slate-400 border-b border-gray-800">
+              <tr>
+                <th class="p-3.5">Commercial Vertical</th>
+                <th class="p-3.5">Primary Target Fleet</th>
+                <th class="p-3.5">Software Runtime Model</th>
+                <th class="p-3.5">Nationwide Asset Base</th>
+                <th class="p-3.5 text-right">Mature ARR</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800/60 text-slate-300">
+              <tr class="hover:bg-gray-800/30 transition">
+                <td class="p-3.5 font-bold text-cyan-300 flex items-center gap-2">
+                  <i data-lucide="satellite" class="w-4 h-4 text-cyan-400"></i>
+                  Commercial LEO Megaconstellations
+                </td>
+                <td class="p-3.5">Starlink, Kuiper, OneWeb AI routers</td>
+                <td class="p-3.5">$2,400 / satellite-node / yr</td>
+                <td class="p-3.5">32,000 satellites</td>
+                <td class="p-3.5 text-right font-bold text-emerald-400">$76.8M</td>
+              </tr>
+              <tr class="hover:bg-gray-800/30 transition">
+                <td class="p-3.5 font-bold text-sky-300 flex items-center gap-2">
+                  <i data-lucide="plane" class="w-4 h-4 text-sky-400"></i>
+                  Commercial Avionics Flight Guidance
+                </td>
+                <td class="p-3.5">Boeing 787 / A350 / eVTOL Fly-By-Wire</td>
+                <td class="p-3.5">$1,800 / aircraft-node / yr</td>
+                <td class="p-3.5">26,000 airliners & jets</td>
+                <td class="p-3.5 text-right font-bold text-emerald-400">$46.8M</td>
+              </tr>
+              <tr class="hover:bg-gray-800/30 transition">
+                <td class="p-3.5 font-bold text-indigo-300 flex items-center gap-2">
+                  <i data-lucide="server" class="w-4 h-4 text-indigo-400"></i>
+                  High-Altitude AI Cloud & Hyperscalers
+                </td>
+                <td class="p-3.5">Terrestrial atmospheric neutron fault mitigation</td>
+                <td class="p-3.5">$120 / accelerator socket / yr</td>
+                <td class="p-3.5">350,000 server GPUs</td>
+                <td class="p-3.5 text-right font-bold text-emerald-400">$42.0M</td>
+              </tr>
+              <tr class="hover:bg-gray-800/30 transition">
+                <td class="p-3.5 font-bold text-emerald-300 flex items-center gap-2">
+                  <i data-lucide="car" class="w-4 h-4 text-emerald-400"></i>
+                  Autonomous Automotive Level 4/5
+                </td>
+                <td class="p-3.5">Robotaxi vision compute units (ASIL-D)</td>
+                <td class="p-3.5">$48 / vehicle onboard DSP / yr</td>
+                <td class="p-3.5">500,000 autonomous units</td>
+                <td class="p-3.5 text-right font-bold text-emerald-400">$24.0M</td>
+              </tr>
+              <tr class="hover:bg-gray-800/30 transition">
+                <td class="p-3.5 font-bold text-amber-300 flex items-center gap-2">
+                  <i data-lucide="moon" class="w-4 h-4 text-amber-400"></i>
+                  Civil Space & Artemis Lunar Landers
+                </td>
+                <td class="p-3.5">CLPS rovers, Gateway avionics, space stations</td>
+                <td class="p-3.5">$45,000 / flight processor / yr</td>
+                <td class="p-3.5">320 mission payloads</td>
+                <td class="p-3.5 text-right font-bold text-emerald-400">$14.4M</td>
+              </tr>
+              <tr class="hover:bg-gray-800/30 transition">
+                <td class="p-3.5 font-bold text-rose-300 flex items-center gap-2">
+                  <i data-lucide="shield" class="w-4 h-4 text-rose-400"></i>
+                  High-Energy Medical & Particle Physics
+                </td>
+                <td class="p-3.5">Proton-beam radiotherapy & beamline detectors</td>
+                <td class="p-3.5">$6,000 / gantry / yr</td>
+                <td class="p-3.5">2,400 hospital gantries</td>
+                <td class="p-3.5 text-right font-bold text-emerald-400">$14.4M</td>
+              </tr>
+              <tr class="bg-gray-950 font-bold text-slate-100">
+                <td class="p-3.5 uppercase tracking-wider" colspan="4">Consolidated Nationwide Mature Run-Rate (ARR)</td>
+                <td class="p-3.5 text-right text-emerald-400 text-sm font-black">$218.4M / yr</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detailed Vertical Breakdown Cards (Why Incumbents Missed This) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Deep Dive 1: LEO Constellations -->
+        <div class="bg-gray-900/40 rounded-2xl border border-gray-800 p-5 flex flex-col justify-between backdrop-blur">
+          <div>
+            <div class="flex items-center gap-2 text-cyan-400 mb-2">
+              <i data-lucide="satellite" class="w-5 h-5"></i>
+              <h4 class="font-bold text-sm text-white">LEO Space Megaconstellations</h4>
+            </div>
+            <div class="text-xs text-slate-300 space-y-2 mt-3">
+              <p><strong>Physics in 1 Sentence:</strong> In Low Earth Orbit, high-inclination passes through the South Atlantic Anomaly (SAA) deliver heavy-ion particle strikes that trigger regenerative thyristor collapse within 150 picoseconds.</p>
+              <div class="p-3 rounded-lg bg-gray-950/70 border border-gray-800 text-slate-400">
+                <span class="text-amber-400 font-bold block mb-1">Why Incumbents Missed This:</span>
+                Legacy space operators used massive tantalum radiation shielding (which adds launch mass) or purchased obsolete $100k radiation-hardened 1990s-era CPUs that cannot run modern neural network routing algorithms.
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-gray-800 text-[11px] mono text-cyan-300">
+            ARR Contribution: $76.8M (35.2%)
+          </div>
+        </div>
+
+        <!-- Deep Dive 2: Commercial Avionics -->
+        <div class="bg-gray-900/40 rounded-2xl border border-gray-800 p-5 flex flex-col justify-between backdrop-blur">
+          <div>
+            <div class="flex items-center gap-2 text-sky-400 mb-2">
+              <i data-lucide="plane" class="w-5 h-5"></i>
+              <h4 class="font-bold text-sm text-white">Commercial Aviation Fly-By-Wire</h4>
+            </div>
+            <div class="text-xs text-slate-300 space-y-2 mt-3">
+              <p><strong>Physics in 1 Sentence:</strong> Atmospheric secondary cosmic neutrons (flux peak at 38,000 ft Pfotzer maximum) induce silicon recoil atoms that emulate heavy-ion latchups in cockpit flight controllers.</p>
+              <div class="p-3 rounded-lg bg-gray-950/70 border border-gray-800 text-slate-400">
+                <span class="text-amber-400 font-bold block mb-1">Why Incumbents Missed This:</span>
+                Aviation relies on triple-modular redundancy (TMR) where 2 out of 3 redundant computers vote; however, when an SEL occurs, standard circuit breakers trip permanently, leaving the aircraft in a degraded dual or single-channel state during oceanic transit.
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-gray-800 text-[11px] mono text-sky-300">
+            ARR Contribution: $46.8M (21.4%)
+          </div>
+        </div>
+
+        <!-- Deep Dive 3: Autonomous Robotaxis -->
+        <div class="bg-gray-900/40 rounded-2xl border border-gray-800 p-5 flex flex-col justify-between backdrop-blur">
+          <div>
+            <div class="flex items-center gap-2 text-emerald-400 mb-2">
+              <i data-lucide="car" class="w-5 h-5"></i>
+              <h4 class="font-bold text-sm text-white">Autonomous Ground Vehicles (ASIL-D)</h4>
+            </div>
+            <div class="text-xs text-slate-300 space-y-2 mt-3">
+              <p><strong>Physics in 1 Sentence:</strong> High-flux thermal neutron capture in Boron-10 packaging isotopes emits alpha particles that trigger localized micro-latchups in 4nm autonomous driving vision accelerator units.</p>
+              <div class="p-3 rounded-lg bg-gray-950/70 border border-gray-800 text-slate-400">
+                <span class="text-amber-400 font-bold block mb-1">Why Incumbents Missed This:</span>
+                Automotive OEMs treated unexpected vehicle freezes as random "software bugs" and required full vehicle ignition cycles to clear, introducing unacceptable safety hazards at highway speeds.
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-gray-800 text-[11px] mono text-emerald-300">
+            ARR Contribution: $24.0M (11.0%)
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Executive Contact / Investor Collaboration Callout -->
+      <div class="p-6 rounded-2xl bg-gradient-to-r from-gray-900 via-gray-950 to-gray-900 border border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h4 class="text-base font-bold text-white">Partner with the RadLatch Flight Transition Consortium</h4>
+          <p class="text-xs text-slate-400 mt-1">Direct inquiries for NASA SBIR Phase I/II STTR subcontracts, commercial flight evaluations, and IP licensing.</p>
+        </div>
+        <a href="mailto:support@rfwavecode.com" class="px-5 py-2.5 rounded-xl font-bold text-xs mono uppercase bg-cyan-500 hover:bg-cyan-400 text-black shadow-lg shadow-cyan-950 transition flex items-center gap-2">
+          <i data-lucide="mail" class="w-4 h-4"></i>
+          support@rfwavecode.com
+        </a>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- APP FOOTER -->
+  <footer class="mt-auto border-t border-gray-800/80 bg-[#070b14] py-4 px-4 lg:px-8 text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-slate-300">RadLatch™ Avionics Technologies</span>
+        <span>•</span>
+        <span>NASA SBIR Topic S1.02 Phase I Application</span>
+      </div>
+      <div class="mono text-[11px] text-slate-400">
+        Sub-nanosecond Solid-State Parasitic Cleanser • Patent Pending
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT SIMULATION ENGINE, CHARTS, & STATE OBSERVER                     -->
+  <!-- ========================================================================= -->
+  <script>
+    // --- TAB SWITCHING WITH STRICT MAPPING & MATHJAX HOOK ---
+    const tabMapping = {
+      'sim': { viewId: 'viewSim', btnId: 'tabBtnSim' },
+      'physics': { viewId: 'viewPhysics', btnId: 'tabBtnPhysics' },
+      'proposal': { viewId: 'viewProposal', btnId: 'tabBtnProposal' },
+      'arr': { viewId: 'viewARR', btnId: 'tabBtnARR' }
+    };
+
+    function switchTab(tabKey) {
+      Object.keys(tabMapping).forEach(key => {
+        const item = tabMapping[key];
+        const viewEl = document.getElementById(item.viewId);
+        const btnEl = document.getElementById(item.btnId);
+
+        if (key === tabKey) {
+          viewEl.classList.remove('hidden');
+          btnEl.className = 'flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-150 bg-cyan-500/20 text-cyan-300 border border-cyan-500/50';
+        } else {
+          viewEl.classList.add('hidden');
+          btnEl.className = 'flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-150 text-slate-400 hover:text-slate-200 hover:bg-gray-800/40 border border-transparent';
+        }
+      });
+
+      // Retrigger MathJax typeset to ensure clean formula rendering
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise();
+      }
+
+      // If returning to simulation tab, adjust canvas coordinate scalings
+      if (tabKey === 'sim') {
+        resizeCanvas();
+      }
+    }
+
+    // --- SYSTEM STATE & PHYSICAL CONSTANTS ---
+    const sysState = {
+      Z: 12.45,           // Rail Impedance in Ohms (Nominal: 10 - 15)
+      D: 34.8,            // PWM Duty Cycle in % (Nominal: 30 - 45)
+      I: 0.82,            // Total current in Amperes
+      Tj: 48.2,           // Junction Temp in Celsius
+      Vrail: 1.20,        // Core Rail Voltage (V)
+      isLatched: false,   // True if parasitic SCR is in regenerative latch
+      breakerTripped: false,
+      quenchTimer: 0,
+      autoAutonomous: true,
+      letThreshold: 42.5, // MeV*cm^2/mg
+      Ztrip: 0.35,        // Trip threshold in Ohms
+      quenchDuration: 85, // microseconds
+      history: [],        // Rolling history for charts
+      maxHistory: 40,
+      particles: [],
+      cosmicTracks: [],
+      tickCounter: 0
+    };
+
+    // Initialize telemetry history
+    for (let i = 0; i < sysState.maxHistory; i++) {
+      sysState.history.push({
+        time: (i - sysState.maxHistory).toString(),
+        Z: 12.45,
+        D: 34.8,
+        I: 0.82
+      });
+    }
+
+    // --- CHART.JS CONFIGURATION ---
+    let phaseChart, impedanceTimeChart, dutyTimeChart;
+
+    function initCharts() {
+      // 1. Phase-Space Scatter Chart (D vs Z)
+      const ctxPhase = document.getElementById('phaseChart').getContext('2d');
+      phaseChart = new Chart(ctxPhase, {
+        type: 'scatter',
+        data: {
+          datasets: [
+            {
+              label: 'Live Dynamic State (D, Z)',
+              data: [{ x: sysState.D, y: sysState.Z }],
+              backgroundColor: '#38bdf8',
+              borderColor: '#0284c7',
+              borderWidth: 2,
+              pointRadius: 8,
+              pointHoverRadius: 10,
+              showLine: false,
+              order: 1
+            },
+            {
+              label: 'State Trajectory Path',
+              data: [
+                { x: 34.0, y: 12.5 },
+                { x: 35.5, y: 12.1 },
+                { x: 34.8, y: 12.45 }
+              ],
+              borderColor: 'rgba(56, 189, 248, 0.4)',
+              borderWidth: 2,
+              fill: false,
+              showLine: true,
+              pointRadius: 2,
+              order: 2
+            },
+            {
+              label: 'Hazard Locus (SEL Trap Region)',
+              data: [
+                { x: 80, y: 0.02 },
+                { x: 100, y: 0.02 },
+                { x: 100, y: 0.5 },
+                { x: 80, y: 0.5 },
+                { x: 80, y: 0.02 }
+              ],
+              backgroundColor: 'rgba(239, 68, 68, 0.22)',
+              borderColor: 'rgba(239, 68, 68, 0.85)',
+              borderWidth: 1.5,
+              borderDash: [5, 5],
+              showLine: true,
+              fill: true,
+              pointRadius: 0,
+              order: 3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          scales: {
+            x: {
+              title: { display: true, text: 'Regulator Duty Cycle D (%)', color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } },
+              min: 0,
+              max: 100,
+              grid: { color: 'rgba(51, 65, 85, 0.3)' },
+              ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 } }
+            },
+            y: {
+              title: { display: true, text: 'Rail Impedance Z (Ω)', color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } },
+              type: 'logarithmic',
+              min: 0.01,
+              max: 30,
+              grid: { color: 'rgba(51, 65, 85, 0.3)' },
+              ticks: {
+                color: '#64748b',
+                font: { family: 'JetBrains Mono', size: 9 },
+                callback: function(val) { return val === 0.01 || val === 0.1 || val === 1 || val === 10 ? val + ' Ω' : null; }
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: { color: '#cbd5e1', font: { family: 'JetBrains Mono', size: 9 }, boxWidth: 10 }
+            }
+          }
+        }
+      });
+
+      // 2. Impedance vs Time Plot
+      const ctxZ = document.getElementById('impedanceTimeChart').getContext('2d');
+      impedanceTimeChart = new Chart(ctxZ, {
+        type: 'line',
+        data: {
+          labels: sysState.history.map(h => h.time),
+          datasets: [{
+            label: 'Impedance Z(t)',
+            data: sysState.history.map(h => h.Z),
+            borderColor: '#38bdf8',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.1,
+            fill: {
+              target: 'origin',
+              above: 'rgba(56, 189, 248, 0.06)'
+            }
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          scales: {
+            x: { display: false },
+            y: {
+              min: 0,
+              max: 16,
+              grid: { color: 'rgba(51, 65, 85, 0.25)' },
+              ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 } }
+            }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      // 3. Duty Cycle & Current Time Plot
+      const ctxD = document.getElementById('dutyTimeChart').getContext('2d');
+      dutyTimeChart = new Chart(ctxD, {
+        type: 'line',
+        data: {
+          labels: sysState.history.map(h => h.time),
+          datasets: [
+            {
+              label: 'Duty D (%)',
+              data: sysState.history.map(h => h.D),
+              borderColor: '#818cf8',
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.1,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Current I (A)',
+              data: sysState.history.map(h => h.I),
+              borderColor: '#34d399',
+              borderWidth: 1.5,
+              borderDash: [3, 3],
+              pointRadius: 0,
+              tension: 0.1,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          scales: {
+            x: { display: false },
+            y: {
+              type: 'linear',
+              position: 'left',
+              min: 0,
+              max: 100,
+              grid: { color: 'rgba(51, 65, 85, 0.25)' },
+              ticks: { color: '#818cf8', font: { family: 'JetBrains Mono', size: 8 } }
+            },
+            y1: {
+              type: 'linear',
+              position: 'right',
+              min: 0,
+              max: 15,
+              grid: { drawOnChartArea: false },
+              ticks: { color: '#34d399', font: { family: 'JetBrains Mono', size: 8 } }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              labels: { color: '#cbd5e1', font: { family: 'JetBrains Mono', size: 8 }, boxWidth: 8 }
+            }
+          }
+        }
+      });
+    }
+
+    // --- CANVAS HARDWARE ANIMATION LOOP ---
+    const canvas = document.getElementById('siliconCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const w = rect.width || 600;
+      const h = rect.height || 280;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // Particle constructor for electron-hole plasma cloud
+    function initParticles() {
+      sysState.particles = [];
+      for (let i = 0; i < 45; i++) {
+        sysState.particles.push({
+          x: Math.random() * 500,
+          y: Math.random() * 200,
+          vx: (Math.random() - 0.5) * 1.2,
+          vy: (Math.random() - 0.5) * 1.2,
+          type: Math.random() > 0.5 ? 'electron' : 'hole',
+          size: Math.random() * 2 + 1.5
+        });
+      }
+    }
+
+    function drawSiliconCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // 1. Draw Silicon Substrate Layers
+      const pSubHeight = h * 0.42;
+      const nWellHeight = h * 0.38;
+
+      // P-type Substrate
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, h - pSubHeight, w, pSubHeight);
+      ctx.strokeStyle = '#1e293b';
+      ctx.strokeRect(0, h - pSubHeight, w, pSubHeight);
+
+      // N-well Region (Center Right)
+      const nWellW = w * 0.45;
+      const nWellX = w * 0.48;
+      ctx.fillStyle = '#1e1b4b';
+      ctx.fillRect(nWellX, h - pSubHeight - 30, nWellW, pSubHeight + 10);
+      ctx.strokeStyle = '#312e81';
+      ctx.strokeRect(nWellX, h - pSubHeight - 30, nWellW, pSubHeight + 10);
+
+      // P+ and N+ Active Drains / Sources (Surface Wells)
+      const wellY = h - pSubHeight - 32;
+      const contacts = [
+        { x: w * 0.12, w: 32, label: 'N+ (Cathode)', color: '#0369a1' },
+        { x: w * 0.28, w: 32, label: 'P+ (Sub)', color: '#4338ca' },
+        { x: w * 0.55, w: 32, label: 'N+ (Well)', color: '#0369a1' },
+        { x: w * 0.75, w: 32, label: 'P+ (Anode)', color: '#4338ca' }
+      ];
+
+      contacts.forEach(c => {
+        ctx.fillStyle = c.color;
+        ctx.fillRect(c.x, wellY, c.w, 14);
+        ctx.strokeStyle = '#64748b';
+        ctx.strokeRect(c.x, wellY, c.w, 14);
+
+        // Contact Leads
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(c.x + c.w / 2, wellY);
+        ctx.lineTo(c.x + c.w / 2, wellY - 20);
+        ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '8px "JetBrains Mono"';
+        ctx.fillText(c.label, c.x - 8, wellY - 24);
+      });
+
+      // Layer Boundary Text
+      ctx.fillStyle = '#475569';
+      ctx.font = '10px "JetBrains Mono"';
+      ctx.fillText('p-Silicon Substrate (Bulk)', 16, h - 16);
+      ctx.fillText('n-Well Diffusion', nWellX + 16, h - pSubHeight + 20);
+
+      // 2. Draw Parasitic p-n-p-n Thyristor Coupling Overlay
+      if (sysState.isLatched) {
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
+        ctx.lineWidth = 4;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(w * 0.75 + 16, wellY + 8);
+        ctx.lineTo(nWellX + 30, h - pSubHeight);
+        ctx.lineTo(w * 0.28 + 16, h - pSubHeight);
+        ctx.lineTo(w * 0.12 + 16, wellY + 8);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Latch Plasma Core Glow
+        const grad = ctx.createRadialGradient(w * 0.5, h * 0.65, 10, w * 0.5, h * 0.65, 120);
+        grad.addColorStop(0, 'rgba(239, 68, 68, 0.45)');
+        grad.addColorStop(0.5, 'rgba(249, 115, 22, 0.2)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      } else if (sysState.breakerTripped) {
+        // High-side power dump / GaN quench line
+        ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 12px "JetBrains Mono"';
+        ctx.fillText('GaN FAST DUMP ACTIVE: RECOMBINING CARRIER TRAPS', w * 0.22, 35);
+      }
+
+      // 3. Render Cosmic Ion Tracks
+      for (let i = sysState.cosmicTracks.length - 1; i >= 0; i--) {
+        const track = sysState.cosmicTracks[i];
+        ctx.strokeStyle = `rgba(251, 191, 36, ${track.alpha})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(track.x0, track.y0);
+        ctx.lineTo(track.x1, track.y1);
+        ctx.stroke();
+
+        // Ionization Cone
+        ctx.fillStyle = `rgba(239, 68, 68, ${track.alpha * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(track.x1, track.y1, 14 * (1 - track.alpha + 0.5), 0, Math.PI * 2);
+        ctx.fill();
+
+        track.alpha -= 0.035;
+        if (track.alpha <= 0) {
+          sysState.cosmicTracks.splice(i, 1);
+        }
+      }
+
+      // 4. Update and Draw Charge Carrier Particles
+      sysState.particles.forEach(p => {
+        p.x += p.vx * (sysState.isLatched ? 3.5 : 1.0);
+        p.y += p.vy * (sysState.isLatched ? 3.5 : 1.0);
+
+        if (p.x < 10) p.x = w - 10;
+        if (p.x > w - 10) p.x = 10;
+        if (p.y < wellY) p.y = h - 20;
+        if (p.y > h - 10) p.y = wellY + 5;
+
+        ctx.fillStyle = p.type === 'electron' ? (sysState.isLatched ? '#ef4444' : '#38bdf8') : '#a855f7';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    // --- FAULT INJECTION & CONTROL FUNCTIONS ---
+
+    function injectCosmicStrike() {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width || 600;
+      const h = rect.height || 280;
+
+      // Create an oblique ion penetration track
+      const strikeX = w * (0.35 + Math.random() * 0.3);
+      sysState.cosmicTracks.push({
+        x0: strikeX - 70,
+        y0: 0,
+        x1: strikeX + 40,
+        y1: h * 0.75,
+        alpha: 1.0
+      });
+
+      // Collapse Impedance & saturate PWM
+      sysState.isLatched = true;
+      sysState.Z = Math.max(0.04, 0.08 * (1 - sysState.letThreshold / 110));
+      sysState.D = 98.4;
+      sysState.I = 11.8;
+      sysState.Tj = 96.5;
+
+      updateUIBadges();
+
+      // If autonomous observer is on, trigger clean quench cycle within nanoseconds
+      if (sysState.autoAutonomous) {
+        setTimeout(() => {
+          triggerDumpCycle();
+        }, 120); // 120ms visual simulation delay for user observability
+      }
+    }
+
+    function triggerDumpCycle() {
+      sysState.breakerTripped = true;
+      sysState.quenchTimer = sysState.quenchDuration;
+
+      // Quench state
+      sysState.I = 0.01;
+      sysState.D = 0.0;
+      sysState.Vrail = 0.02;
+
+      updateUIBadges();
+
+      // Recover after quench duration completes
+      setTimeout(() => {
+        resetNominalState();
+      }, 700);
+    }
+
+    function resetNominalState() {
+      sysState.isLatched = false;
+      sysState.breakerTripped = false;
+      sysState.Z = 12.45 + (Math.random() - 0.5) * 0.4;
+      sysState.D = 34.8 + (Math.random() - 0.5) * 1.5;
+      sysState.I = 0.82 + (Math.random() - 0.5) * 0.05;
+      sysState.Vrail = 1.20;
+      sysState.Tj = 48.2;
+      updateUIBadges();
+    }
+
+    function toggleAutoLoop() {
+      sysState.autoAutonomous = !sysState.autoAutonomous;
+      const btn = document.getElementById('btnAutoLoop');
+      btn.innerText = `Autonomous Mode: ${sysState.autoAutonomous ? 'ON' : 'OFF'}`;
+      btn.className = sysState.autoAutonomous 
+        ? 'flex-1 py-2 px-3 rounded-lg text-xs font-semibold mono border border-cyan-500/50 bg-cyan-950/60 text-cyan-300 transition'
+        : 'flex-1 py-2 px-3 rounded-lg text-xs font-semibold mono border border-gray-700 bg-gray-800/80 text-slate-400 transition';
+    }
+
+    function updateUIBadges() {
+      const banner = document.getElementById('latchAlertBanner');
+      const stateLabel = document.getElementById('stateLabel');
+      const pingStatus = document.getElementById('pingStatus');
+      const dotStatus = document.getElementById('dotStatus');
+      const thyPill = document.getElementById('hudThyristorPill');
+      const hdrV = document.getElementById('hdrRailV');
+
+      if (sysState.isLatched && !sysState.breakerTripped) {
+        banner.classList.remove('hidden');
+        stateLabel.innerText = 'SEL COLLAPSE DETECTED';
+        stateLabel.className = 'text-xs font-semibold mono uppercase tracking-wider text-red-400 animate-pulse';
+        pingStatus.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75';
+        dotStatus.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500';
+        thyPill.innerText = 'THYRISTOR: ON (LATCH-UP)';
+        thyPill.className = 'px-2.5 py-1 bg-red-950/90 backdrop-blur rounded-md border border-red-500 text-[11px] mono font-bold text-red-300 animate-pulse';
+        hdrV.innerText = '0.42 V (DROOP)';
+        hdrV.className = 'text-red-400 font-semibold';
+      } else if (sysState.breakerTripped) {
+        banner.classList.add('hidden');
+        stateLabel.innerText = 'GaN SOLID-STATE DUMP';
+        stateLabel.className = 'text-xs font-semibold mono uppercase tracking-wider text-cyan-300';
+        pingStatus.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75';
+        dotStatus.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500';
+        thyPill.innerText = 'BREAKER: TRIP & FLUSH';
+        thyPill.className = 'px-2.5 py-1 bg-cyan-950/90 backdrop-blur rounded-md border border-cyan-500 text-[11px] mono font-bold text-cyan-300';
+        hdrV.innerText = '0.00 V (QUENCH)';
+        hdrV.className = 'text-cyan-400 font-semibold';
+      } else {
+        banner.classList.add('hidden');
+        stateLabel.innerText = 'NOMINAL MONITOR';
+        stateLabel.className = 'text-xs font-semibold mono uppercase tracking-wider text-emerald-400';
+        pingStatus.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75';
+        dotStatus.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500';
+        thyPill.innerText = 'THYRISTOR: OFF (HIGH-Z)';
+        thyPill.className = 'px-2.5 py-1 bg-gray-900/90 backdrop-blur rounded-md border border-gray-700 text-[11px] mono font-bold text-slate-400';
+        hdrV.innerText = '1.20 V';
+        hdrV.className = 'text-cyan-400 font-semibold';
+      }
+
+      // Metric Badges
+      document.getElementById('metricZ').innerText = sysState.Z.toFixed(2) + ' Ω';
+      document.getElementById('metricD').innerText = sysState.D.toFixed(1) + ' %';
+      document.getElementById('metricI').innerText = sysState.I.toFixed(2) + ' A';
+      document.getElementById('metricT').innerText = sysState.Tj.toFixed(1) + ' °C';
+    }
+
+    // Slider Listeners
+    document.getElementById('sliderLet').addEventListener('input', function(e) {
+      sysState.letThreshold = parseFloat(e.target.value);
+      document.getElementById('sliderLetVal').innerText = sysState.letThreshold.toFixed(1) + ' MeV·cm²/mg';
+    });
+    document.getElementById('sliderZtrip').addEventListener('input', function(e) {
+      sysState.Ztrip = parseFloat(e.target.value);
+      document.getElementById('sliderZtripVal').innerText = sysState.Ztrip.toFixed(2) + ' Ω';
+    });
+    document.getElementById('sliderQuench').addEventListener('input', function(e) {
+      sysState.quenchDuration = parseInt(e.target.value, 10);
+      document.getElementById('sliderQuenchVal').innerText = sysState.quenchDuration + ' μs';
+    });
+
+    // --- MAIN PHYSICS & SIMULATION TIMER LOOP ---
+    function simStep() {
+      sysState.tickCounter++;
+
+      // Subtle nominal sensor noise
+      if (!sysState.isLatched && !sysState.breakerTripped) {
+        sysState.Z = 12.45 + Math.sin(sysState.tickCounter * 0.1) * 0.25 + (Math.random() - 0.5) * 0.1;
+        sysState.D = 34.8 + Math.cos(sysState.tickCounter * 0.08) * 1.8 + (Math.random() - 0.5) * 0.4;
+        sysState.I = (sysState.Vrail / sysState.Z) + (Math.random() - 0.5) * 0.03;
+        sysState.Tj = 48.2 + (sysState.I * 1.2);
+      }
+
+      // Autonomous Observer Inversion Logic
+      // Check condition: Z < Ztrip AND D > 85%
+      if (sysState.isLatched && !sysState.breakerTripped && sysState.autoAutonomous) {
+        if (sysState.Z <= sysState.Ztrip && sysState.D >= 85.0) {
+          triggerDumpCycle();
+        }
+      }
+
+      // Update Live UI Text
+      updateUIBadges();
+
+      // Throttled Chart Updates (Every 3 ticks to conserve CPU)
+      if (sysState.tickCounter % 3 === 0) {
+        // Shift history arrays
+        sysState.history.shift();
+        sysState.history.push({
+          time: sysState.tickCounter.toString(),
+          Z: sysState.Z,
+          D: sysState.D,
+          I: sysState.I
+        });
+
+        // 1. Update Phase-Space Chart
+        if (phaseChart) {
+          phaseChart.data.datasets[0].data = [{ x: sysState.D, y: sysState.Z }];
+          // Track trailing trajectory points
+          const traj = phaseChart.data.datasets[1].data;
+          traj.push({ x: sysState.D, y: sysState.Z });
+          if (traj.length > 8) traj.shift();
+          phaseChart.update('none');
+        }
+
+        // 2. Update Secondary Time Charts
+        if (impedanceTimeChart && dutyTimeChart) {
+          impedanceTimeChart.data.datasets[0].data = sysState.history.map(h => h.Z);
+          dutyTimeChart.data.datasets[0].data = sysState.history.map(h => h.D);
+          dutyTimeChart.data.datasets[1].data = sysState.history.map(h => h.I);
+          impedanceTimeChart.update('none');
+          dutyTimeChart.update('none');
+        }
+      }
+
+      // Render physical substrate canvas
+      drawSiliconCanvas();
+    }
+
+    // --- APPLICATION STARTUP SEQUENCE ---
+    window.onload = function() {
+      // Initialize Lucide Icons
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+
+      // Initialize Canvas & Charts
+      resizeCanvas();
+      initParticles();
+      initCharts();
+
+      // Start Real-Time Animation Loop (40 ms ~ 25 Hz updates)
+      setInterval(simStep, 40);
+
+      // Trigger MathJax initial typeset
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise();
+      }
+    };
+  </script>
+</body>
+</html>
